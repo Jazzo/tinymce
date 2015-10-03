@@ -1,3 +1,5 @@
+/*eslint-env node */
+
 module.exports = function(grunt) {
 	var packageData = grunt.file.readJSON("package.json");
 	var changelogLine = grunt.file.read("changelog.txt").toString().split("\n")[0];
@@ -12,21 +14,6 @@ module.exports = function(grunt) {
 				config: ".eslintrc"
 			},
 
-			core: ["js/tinymce/classes/**/*.js"],
-
-			plugins: [
-				"js/tinymce/plugins/*/plugin.js",
-				"js/tinymce/plugins/*/classes/**/*.js",
-				"!js/tinymce/plugins/paste/plugin.js",
-				"!js/tinymce/plugins/table/plugin.js",
-				"!js/tinymce/plugins/spellchecker/plugin.js",
-				"!js/tinymce/plugins/imagetools/plugin.js"
-			],
-
-			themes: ["js/tinymce/themes/*/theme.js"]
-		},
-
-		jshint: {
 			core: ["js/tinymce/classes/**/*.js"],
 
 			plugins: [
@@ -204,7 +191,8 @@ module.exports = function(grunt) {
 					append: ["Icons.less"],
 					importFrom: "js/tinymce/tinymce.js",
 					path: "js/tinymce/skins",
-					ext: ".modern.dev.less"
+					devLess: "skin.dev.less",
+					srcLess: "skin.less"
 				}
 			},
 
@@ -222,7 +210,8 @@ module.exports = function(grunt) {
 					append: ["Icons.Ie7.less"],
 					importFrom: "js/tinymce/tinymce.js",
 					path: "js/tinymce/skins",
-					ext: ".ie7.dev.less"
+					devLess: "skin.ie7.dev.less",
+					srcLess: "skin.ie7.less"
 				}
 			}
 		},
@@ -235,7 +224,7 @@ module.exports = function(grunt) {
 				},
 
 				expand: true,
-				src: ["js/tinymce/skins/**/skin.modern.dev.less"],
+				src: ["js/tinymce/skins/**/skin.dev.less"],
 				ext: ".min.css"
 			},
 
@@ -530,6 +519,7 @@ module.exports = function(grunt) {
 						{browserName: "internet explorer", platform: "Windows 7", version: "9"},
 						{browserName: "internet explorer", platform: "Windows 7", version: "10"},
 						{browserName: "internet explorer", platform: "Windows 7", version: "11"},
+						{browserName: "microsoftedge", platform: "Windows 10", version: "20.10240"},
 						{browserName: "safari", platform: "OS X 10.9", version: "7"},
 						{browserName: "safari", platform: "OS X 10.8", version: "6"}
 					]
@@ -682,7 +672,7 @@ module.exports = function(grunt) {
 		watch: {
 			core: {
 				files: ["js/tinymce/classes/**/*.js"],
-				tasks: ["eslint:core", "jshint:core", "jscs:core", "amdlc:core", "amdlc:core-jquery", "skin"],
+				tasks: ["eslint:core", "jscs:core", "amdlc:core", "amdlc:core-jquery", "skin"],
 				options: {
 					spawn: false
 				}
@@ -693,7 +683,7 @@ module.exports = function(grunt) {
 				tasks: [
 					"amdlc:paste-plugin", "amdlc:imagetools-plugin",
 					"amdlc:table-plugin", "amdlc:spellchecker-plugin", "uglify:plugins",
-					"eslint:plugins", "jshint:plugins", "jscs:plugins"
+					"eslint:plugins", "jscs:plugins"
 				],
 				options: {
 					spawn: false
@@ -702,7 +692,7 @@ module.exports = function(grunt) {
 
 			themes: {
 				files: ["js/tinymce/themes/**/*.js"],
-				tasks: ["eslint:themes", "jshint:themes", "jscs:themes", "uglify:themes"],
+				tasks: ["eslint:themes", "jscs:themes", "uglify:themes"],
 				options: {
 					spawn: false
 				}
@@ -721,7 +711,7 @@ module.exports = function(grunt) {
 	require("load-grunt-tasks")(grunt);
 	grunt.loadTasks("tools/tasks");
 
-	grunt.registerTask("lint", ["eslint", "jshint", "jscs"]);
+	grunt.registerTask("lint", ["eslint", "jscs"]);
 	grunt.registerTask("minify", ["amdlc", "uglify", "skin", "less"]);
 	grunt.registerTask("test", ["qunit"]);
 	grunt.registerTask("sc-test", ["connect", "clean:saucelabs", "saucelabs-qunit"]);
