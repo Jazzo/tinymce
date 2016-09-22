@@ -39,6 +39,10 @@ define("tinymce/EnterKey", [
 					dom.getContentEditable(node) !== "true";
 			}
 
+			function isTableCell(node) {
+				return node && /^(TD|TH|CAPTION)$/.test(node.nodeName);
+			}
+
 			// Renders empty block on IE
 			function renderBlockOnIE(block) {
 				var oldRng;
@@ -228,7 +232,7 @@ define("tinymce/EnterKey", [
 								block.appendChild(clonedNode);
 							}
 						}
-					} while ((node = node.parentNode));
+					} while ((node = node.parentNode) && node != editableRoot);
 				}
 
 				// BR is needed in empty blocks on non IE browsers
@@ -305,9 +309,14 @@ define("tinymce/EnterKey", [
 
 				// Not in a block element or in a table cell or caption
 				parentBlock = dom.getParent(container, dom.isBlock);
-				rootBlockName = editor.getBody().nodeName.toLowerCase();
 				if (!parentBlock || !canSplitBlock(parentBlock)) {
 					parentBlock = parentBlock || editableRoot;
+
+					if (parentBlock == editor.getBody() || isTableCell(parentBlock)) {
+						rootBlockName = parentBlock.nodeName.toLowerCase();
+					} else {
+						rootBlockName = parentBlock.parentNode.nodeName.toLowerCase();
+					}
 
 					if (!parentBlock.hasChildNodes()) {
 						newBlock = dom.create(blockName);
@@ -377,6 +386,10 @@ define("tinymce/EnterKey", [
 					}
 
 					return containerBlock;
+				}
+
+				if (containerBlock == editor.getBody()) {
+					return;
 				}
 
 				// Check if we are in an nested list
@@ -534,7 +547,7 @@ define("tinymce/EnterKey", [
 				}
 			}
 
-			// Get editable root node normaly the body element but sometimes a div or span
+			// Get editable root node, normally the body element but sometimes a div or span
 			editableRoot = getEditableRoot(container);
 
 			// If there is no editable root then enter is done inside a contentEditable false element
@@ -632,6 +645,8 @@ define("tinymce/EnterKey", [
 				if (dom.isEmpty(parentBlock)) {
 					emptyBlock(parentBlock);
 				}
+
+				newBlock.normalize();
 
 				// New block might become empty if it's <p><b>a |</b></p>
 				if (dom.isEmpty(newBlock)) {
